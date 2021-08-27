@@ -14,8 +14,16 @@ const EVENTS = {
   end: SUPPORT_TOUCH ? 'touchend' : 'mouseup'
 };
 
-const start$ = fromEvent($view, EVENTS.start);
-const move$ = fromEvent($view, EVENTS.move);
+const start$ = fromEvent($view, EVENTS.start).pipe(map(toPos));
+const move$ = fromEvent($view, EVENTS.move).pipe(map(toPos));
 const end$ = fromEvent($view, EVENTS.end);
 
 const drag$ = start$.pipe(switchMap(start => move$.pipe(takeUntil(end$))));
+
+function toPos(obs$) {
+  return obs$.pipe(
+    map((v: TouchEvent & MouseEvent) =>
+      SUPPORT_TOUCH ? v.changedTouches[0].pageX : v.pageX
+    )
+  );
+}
